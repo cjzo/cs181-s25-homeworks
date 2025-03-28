@@ -20,6 +20,7 @@
 \usepackage{enumitem}
 \usepackage{bm}
 \usepackage{bbm}
+\usepackage{float}
 
 
 \newcommand{\B}{\text{B}}
@@ -195,7 +196,66 @@ times when we are likely to detect the planet.
 \newpage
 
 \begin{solution}
-	Your solution here.
+
+\begin{enumerate}
+    \item From 3.14 in the textbook, we can find our gradient of cross-entropy loss as:
+
+    \[
+    \nabla L(w) = \sum_{i=1}^N(\hat y_i - y_i)x_i
+    \]
+
+    where $\hat y_i = \sigma(w^\top x_i)$. Thus we can write this as
+
+    \[
+    \nabla L(w) = X^\top (\hat y - y)
+    \]
+
+    Therefore we can perform gradient descent as
+
+    \[
+    w_{new} \leftarrow w_{old} - \eta \nabla L(w)
+    \]
+
+    and our prediction is $\hat y=\sigma(Xw)$ where the function acts on each component of the vector.
+
+    \item We can see from the plots that our graphs with more features tend to have less bias and more variance. The basis 1 graph has the most bias and least variance, the basis 2 graph has a moderate amount of bias and more variance, and the basis 3 graph has less bias and the most variance (as seen above). The fits seem to become more accurate and mean prediction functions seem to more closely match the ground truth, with the bases seeming to approximate the true process better as the number of features increases.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.5\linewidth]{basis1.png}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.5\linewidth]{basis2.png}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.5\linewidth]{basis3.png}
+    \end{figure}
+
+
+    \item For the first bases, increasing the size of the dataset would likely result in it maintaining a high bias and low variance since it results in a linear model, which cannot really capture the periodic behavior of the ground truth. For the second basis, the extra data may allow for the models to decrease bias and increase variance, better fitting to the data due to the increased flexibility from it being a quadratic model. Finally for the last basis, the bias would likely decrease and variance decrease as well since the model has more data to fit properly. With small amounts of data, the higher order polynomial model would likely overfit, so by increasing the data, we can reduce overfitting by decreasing variance, which would result in a better model. 
+
+    \item At $t = 0.1$, our first model reports a classification probability of $0.4989$, which indicates a decent amount of uncertainty since the probability was nearly 0.5. In contrast, our first model's classification probability of $t=3.2$ was $0.9999$, which indicates low uncertainty since the probability is nearly 1. Across the 10 models, we can find the variance for both time points. At $t=0.1$, the variance was $0.000278$ which suggests that the models are consistently uncertain in the classification for that time point. Similarly, at $t=3.2$, the variance was $0.205$ which is much larger than that of $t=0.1$, indicating that the model is fairly inconsistent in the classification. Compared to the models' results for $t=0.1$, the models' predictions for $t=3.2$ are less in agreement but more confident in their individual classifications.
+
+    \item We will use model 3 to identify the ideal time as it best approximates the periodic nature of the data and have enough features that we will not be missing crucial datapoints, staying cautious of overfitting. From the model, we would request times from 3-6 since that is when the mean of learned models indicates that we will observe the planet (which is fairly accurate to the truth. We cannot use our model to determine when the planet is likely to be visible in a humid area near the equator since there would likely be more cloud coverage, reducing visiblity. We would need to retrain the model on local data if we were to move it to a different location to account for potential weather complexities. The data from the alternate telescope is plotted below. We can see that the data is sporadic and doesn't follow the same periodic pattern as the previous data, so fitting a model to the alternative telescope data does not help and would rather be more harmful. Thus the ask is unreasonable.
+
+    
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.5\linewidth]{alternate.png}
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.5\linewidth]{pelase.png}
+    \end{figure}
+    
+\end{enumerate}
+
 \end{solution}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -277,7 +337,172 @@ $\boldX^{-\top} := (\boldX^{\top})^{-1}$
 \newpage
 
 \begin{solution}
-	Your solution here.
+
+\begin{enumerate}
+    \item We want to find $\ln p(D ; \bpi)$. Let $I(\cdot)$ represent the indicator for the event inside the parentheses. We can see that
+    \begin{align*}
+        p(D ; \bpi) &= \prod_{i=1}^n p(x_i, y_i ; \bpi) \\
+        &= \prod_{i=1}^n \prod_{k=1}^K (p(x_i, y_i = C_k; \bpi))^{I(y_i = C_k)} \\
+        &= \prod_{i=1}^n \prod_{k=1}^K (p(x | y_i = C_k)\pi_k)^{I(y_i=C_k)}
+    \end{align*}
+
+    since for $y$ is one-hot encoded so in each $y_i$ will belong to only one class. If it is not in the class, the indicator variable will result in the expression being $1$. Taking the log,
+
+    \begin{align*}
+        \ln p(D ; \bpi) &= \sum_{i=1}^n \ln\left(\left(\prod_{k=1}^Kp(x | y_i = C_k)\pi_k\right)^{I(y_i=C_k)}\right) \\
+        &= \sum_{i=1}^n\sum_{k=1}^K I(y_i=C_k)\left(\ln(p(x|y_i=C_k)+\ln \pi_k\right) \\
+        &=\boxed{\sum_{i=1}^n\sum_{k=1}^K I(y_i=C_k)\ln(p(x|y_i=C_k) + \sum_{i=1}^n\sum_{k=1}^K I(y_i=C_k) \ln \pi_k}
+    \end{align*}
+
+    \item We can use the Lagrange Multipliers to optimize $f$ with respect to each of the $\pi_k$. Since $\sum_{i=1}^n\sum_{k=1}^K I(y_i=C_k)\ln(p(x|y_i=C_k)$ doesn't contain $\pi_k$, we can write our Lagrangian function as
+
+    \[
+    L(\bpi, \lambda) = \sum_{i=1}^n \sum_{k=1}^K I(y_i = C_k) \ln \pi_k + \lambda \left(\sum_{k=1}^K \pi_k - 1\right)
+    \]
+
+    according to our constraint above. Therefore, we can find a critical point by setting the partials to 0. Since the derivative with respect to $\bpi$ is a vector of elements which are the partials with respect to some $\pi_j$, we can find each one:
+
+    \[
+    \frac{\partial L(\bpi, \lambda)}{\partial \pi_j} = \sum_{i=1}^n \frac{I(y=C_j)}{\pi_j} + \lambda = 0
+    \]
+
+    since the partial with respect to $\pi_j$ is nonzero only when $j=k$. We can solve for $\pi_j$
+
+    \[
+    \sum_{i=1}^n \frac{I(y=C_j)}{\pi_j} = - \lambda
+    \]
+    \[
+    \pi_j = -\frac{1}{\lambda} \sum_{i=1}^n I(y_i = C_j)
+    \]
+
+    Solving for the partial with respect to $\lambda$,
+
+    \begin{align*}
+        \frac{\partial L(\bpi, \lambda)}{\partial \lambda} = \sum_{k=1}^K \pi_k - 1 &= 0 \\
+        \sum_{k=1}^K \pi_k &= 1 \\
+        \sum_{k=1}^K \left(-\frac{1}{\lambda} \sum_{i=1}^n I(y_i = C_k)\right) &= 1 \\
+        -\frac{1}{\lambda}\sum_{k=1}^K \sum_{i=1}^n I(y_i = C_k) &= 1 \\
+        -\frac{n}{\lambda} &= 1 \\
+        \lambda &= -n
+    \end{align*}
+
+    since each of the indicators will be equal to 1 exactly once for a specific class. Substituting this into our expression for $\pi_j$:
+
+    \[
+    \pi_j = \frac{-1}{-n}\sum_{i=1}^n I(y_i = C_j)
+    \]
+
+    Let $n_j$ represent the number of samples in class $j$, then we can rewrite $\pi_j$ as
+
+    \[
+    \boxed{\hat \pi_j = \frac{\sum_{i=1}^nI(y_i = C_j)}{n}= \frac{n_j}{n}}
+    \]
+
+    Our final answer for our priors for each class makes sense since we would expect the prior probability for any class $j$ to be the proportion of the data that is from class $j$. This is what we observe above where our priors are just relative probabilities, which we use as an estimate.
+
+    \item Recall that our expression for the log-likelihood was:
+
+    \[
+    \sum_{i=1}^n\sum_{k=1}^K I(y_i=C_k)\ln(p(x|y_i=C_k) + \sum_{i=1}^n\sum_{k=1}^K I(y_i=C_k) \ln \pi_k
+    \]
+
+    Given that our class-conditional probabilities are Gaussian distributions with the same covariance matrix, we can write:
+
+    \[
+    p(x_i | y_i = C_k) = \frac{1}{(2\pi)^{D/2}|\Sigma|^{1/2}}\exp\{-\frac{1}{2}(x_i - \mu_k)^\top \Sigma^{-1} (x_i - \mu_k)\}
+    \]
+
+    Therefore, we can write
+
+    \begin{align*}
+        \ln p(D;\bpi) &= \sum_{i=1}^n\sum_{k=1}^K I(y_i=C_k)\ln\left[\frac{1}{(2\pi)^{D/2}|\Sigma|^{1/2}}\exp\{-\frac{1}{2}(x_i - \mu_k)^\top \Sigma^{-1} (x_i - \mu_k)\}\right] + \sum_{i=1}^n\sum_{k=1}^K I(y_i=C_k) \ln \pi_k \\
+        &= \sum_{i=1}^n\sum_{k=1}^K I(y_i=C_k)\left[ -\frac{D}{2} \ln (2\pi) - \frac{1}{2} \ln (|\Sigma|) -\frac{1}{2}(x_i - \mu_k)^\top \Sigma^{-1} (x_i - \mu_k)\right] + \sum_{i=1}^n\sum_{k=1}^K I(y_i=C_k) \ln \pi_k
+    \end{align*}
+
+    Taking the partial with respect to $\mu_k$:
+
+    \begin{align*}
+        \frac{\partial\ln p (D;\bpi)}{\partial \mu_k} &= \frac{\partial}{\partial \mu_k} \left(\sum_{i=1}^n\sum_{k=1}^K I(y_i=C_k)\left[-\frac{1}{2}(x_i - \mu_k)^\top \Sigma^{-1} (x_i - \mu_k)\right]\right) \\
+        &= -\frac{1}{2} \sum_{i=1}^n I(y_i = C_k) \left[-2 \Sigma^{-1}(x_i - \mu_k)\right] \\
+        &= \sum_{i=1}^n I(y_i = C_k) \Sigma^{-1}(x_i - \mu_k)
+    \end{align*}
+
+    which we know the identities from the Matrix Cookbook. Similar to above, let $n_k$ be the number of samples of class $k$. We know our sample mean can be found by:
+
+    \[
+    \bar{x}_k = \frac{1}{n_k} \sum_{i=1}^n I(y_i = C_k) x_i
+    \]
+
+    which we can substitute by definition below
+
+    \begin{align*}
+        \sum_{i=1}^n I(y_i = C_k) \Sigma^{-1}(x_i - \mu_k) &= \Sigma^{-1}\sum_{i=1}^n I(y_i = C_k) (x_i - \mu_k) \\
+        &= \Sigma^{-1} \left(\sum_{i=1}^n I(y_i = C_k) x_i - \sum_{i=1}^n I(y_i = C_k) \mu_k\right) \\
+        &= \Sigma^{-1}(n_k\bar{x}_k - n_k\mu_k) \\
+        &= n_k \Sigma^{-1}(\bar{x}_k - \mu_k)
+    \end{align*}
+
+    Therefore,
+
+    \[
+    \boxed{\frac{\partial\ln p (D;\bpi)}{\partial \mu_k}  = n_k \Sigma^{-1}(\bar{x}_k - \mu_k)}
+    \]
+
+    \item To find the MLE $\bar{\mu}_k$, we can set the gradient to zero.
+
+    \[
+    \frac{\partial\ln p (D;\bpi)}{\partial \mu_k}  = 0
+    \]
+    \[
+    n_k \Sigma^{-1}(\bar{x}_k - \mu_k) = 0
+    \]
+    \[
+    n_k (\bar{x}_k - \mu_k) = 0
+    \]
+    \[
+    \boxed{\hat{\mu}_k = \bar{x}_k = \frac{1}{n_k} \sum_{i=1}^n I(y_i=C_k)x_i = \frac{\sum_{i=1}^n I(y_i=C_k)x_i}{\sum_{i=1}^n I(y_i=C_k)}}
+    \]
+
+    This is intuitive since the maximum likelihood estimate of the mean for a class $k$ from our calculations is just the sample mean of a class. In other words, the best guess of a class is just the average of the class from the data we have, which is reflected above.
+
+    \item We can take the partial derivative with respect to the matrix $\Sigma$. We know the following from the Cookbook formulas:
+
+    \begin{align*}
+        \frac{\partial\ln p(D;\bpi)}{\partial \Sigma} &= \sum_{i=1}^n \sum_{k=1}^K I(y_i = C_k)\left[-\frac{1}{2} \Sigma^{-T}-\frac{1}{2}(-\Sigma^{-T}(x_i - \mu_k)(x_i - \mu_k)^\top) \Sigma^{-T}\right] \\
+        &= \boxed{-\frac{1}{2}\Sigma^{-1} \sum_{i=1}^n \sum_{k=1}^K I(y_i = C_k) [I - (x_i-\mu_k)(x_i - \mu_k)^\top \Sigma^{-1}]}
+    \end{align*}
+
+    since covariance matrices are symmetrical, we know $\Sigma^{-T} = \Sigma^{-1}$
+
+    \item We can find the MLE $\hat{\Sigma}$ by setting the partial dertivative to 0.
+
+    \[
+    \sum_{i=1}^n \sum_{k=1}^K I(y_i = C_k) [I - (x_i-\mu_k)(x_i - \mu_k)^\top \Sigma^{-1}] = 0
+    \]
+    \[
+    \sum_{i=1}^n \sum_{k=1}^K I(y_i = C_k)- \sum_{i=1}^n \sum_{k=1}^KI(y_i = C_k) (x_i-\mu_k)(x_i - \mu_k)^\top \Sigma^{-1}
+    \]
+    \[
+    \sum_{i=1}^n \sum_{k=1}^K I(y_i = C_k) = \sum_{i=1}^n \sum_{k=1}^KI(y_i = C_k) (x_i-\mu_k)(x_i - \mu_k)^\top \Sigma^{-1}
+    \]
+    \[
+    \sum_{i=1}^n \sum_{k=1}^K I(y_i = C_k) \Sigma= \sum_{i=1}^n \sum_{k=1}^KI(y_i = C_k) (x_i-\mu_k)(x_i - \mu_k)^\top 
+    \]
+
+    We can simplify the left side as
+
+    \[
+    \sum_{i=1}^n \sum_{k=1}^K I(y_i = C_k) \Sigma = \Sigma \sum_{k=1}^K n_k = \Sigma n
+    \]
+
+    Thus, we can write
+
+    \[
+    \boxed{\hat{\Sigma} = \frac{1}{n} \sum_{i=1}^n \sum_{k=1}^KI(y_i = C_k) (x_i-\mu_k)(x_i - \mu_k)^\top }
+    \]
+    
+\end{enumerate}
+
 \end{solution}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Problem 3
@@ -288,14 +513,20 @@ In this problem, you will code up three different classifiers to classify differ
 \begin{center}
   \includegraphics[width=.5\textwidth]{img_input/credit.png}
 \end{center}
-We've further transformed the raw data on debt to income ratio and credit score so that the default feature vector that you will be working with is defined as such:
-\[\bm{x} = \left[\text{debt\_income\_ratio} \cdot \frac{200}{7}-7.5, \frac{\text{credit\_score}-500}{140}-0.5\right]^\top\]
 
-\noindent Please implement the following classifiers in the \verb|SoftmaxRegression| and \verb|KNNClassifier| classes.
+Please implement the following classifiers in the \verb|SoftmaxRegression| and \verb|KNNClassifier| classes.
 
+\textbf{For this problem, apply the following transformation to all data:}
+
+$$\phi(\boldx) = \left[x_1 \cdot \frac{200}{7}-7.5, \frac{x_2-500}{140}+0.5\right]^\top$$
+
+  where $x_1$ and $x_2$ represent the values for debt to income ratio and credit score, respectively.
+  
+  This transformation has been applied to the data for you in the notebook.
 
 \begin{enumerate}[label=\alph*)]
 
+  % FDV: Added the two classifiers below based on s22, integrate them into the s23 solution (the rest of this problem is s23) 
   \item \textbf{A generative classifier with Gaussian class-conditional
           densities with a \textit{shared covariance} matrix} across all classes.
         Feel free to re-use your Problem 2 results.
@@ -305,13 +536,14 @@ We've further transformed the raw data on debt to income ratio and credit score 
         The staff implementation can switch between the two Gaussian generative classifiers with just a
         few lines of code.)
 
-  \item \textbf{A multi-class logistic regression classifier} using the softmax activation function. In your implementation of gradient descent, \textbf{make sure to use L2 regularization} with regularization parameter $\lambda = 0.001$. Please also include a bias term, but do not regularize it. Limit the number of iterations of gradient descent to 200,000, and set the learning rate to be $\eta = 0.001$.
+        % FDV: Since they won't have implemented the gradients in Problem 2, can we provide them code for the optimization/otherwise make this part simple?  
+  \item \textbf{A multi-class logistic regression classifier} using the softmax activation function. In your implementation of gradient descent, \textbf{make sure to include a bias term and use L2 regularization} with regularization parameter $\lambda = 0.001$. Limit the number of iterations of gradient descent to 200,000, and set the learning rate to be $\eta = 0.001$.
 
   \item \textbf{Another multi-class logistic regression classifier} with the additional feature map:
-  $$\phi(\bm x) = [\ln (x_1+10), x_2^2]^\top$$
+  $$\phi(\boldx) = [\ln (x_1+10), x_2^2]^\top$$
+  where $x_1$ and $x_2$ represent the values for debt to income ratio and credit score, respectively.
 
-  \item \textbf{A kNN classifier} in which you classify based on the $k = 1$ and $k = 5$ nearest neighbors and the following distance function: 
-  \[\text{dist}(\boldsymbol{x}, \boldsymbol{x}') = (x_1 - x'_1)^2/9 + (x_2 - x'_2)^2\]
+  \item \textbf{A kNN classifier} in which you classify based on the $k = 1$ and $k = 5$ nearest neighbors and the following distance function: $$dist(loan\_app_1, loan\_app_2) = (debt_1 - debt_2)^2/9 + (credit_1 - credit_2)^2$$
         where nearest neighbors are those with the smallest distances from a given point.
 
         Note 1: When there are more than two labels, no label may have the
@@ -353,7 +585,54 @@ After implementing the above classifiers, complete the following exercises:
 \newpage
 
 \begin{solution}
-	Your solution here.
+
+\begin{enumerate}
+    \item Graphs:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{hw2/(a)Gaussian Shared Covariance.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{hw2/(b) Gaussian Separate Covariance.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{hw2/(c) Softmax Regression.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{hw2/(d) Softmax Regression (Added Feature Map).png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{hw2/(e) KNN (k=1).png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{hw2/(e) KNN (k=5).png}
+\end{figure}
+
+The models perform their classifications differently. The Guassian generative model with shared covariance matrices seem to have linear boundaries between the classifications, which seems to arise because of the shared covariances. Meanwhile, Guassian generative models with separate covariances seem to have almost elliptical/parabolic class boundaries due to the separate covariances, which allow it to more accurately capture the data. The default softmax regression is a linear classifier that has a decision boundary on a hyperplane. However, adding the feature map (the log and square transformations above) result in nonlinear and decision boundaries which in this case do not seem to perform better since a linear boundary is sufficient for the training data. Finally, the kNN classifier for $k=1$ has rigid boundaries since it is solely based on the first nearest neighbor to any datapoint. Surprisingly, the kNN for $k=5$ seems to have a more jagged decision boundary which overlaps classes with datapoints since it works based on a "voting" system where the most common neighbor among the 5 closest will be the class decision. This leads to some apparent misses but actually testing this would require more data.
+
+
+\item For a new loan applicant we can see the classifications for the two models.
+
+\begin{itemize}
+    \item (c): class 0 with probability of 1. In other words, \textbf{Automatically Rejected} with probability \textbf{1}.
+
+    \item (d): class 1 with probability 0.78023571. In other words, \textbf{Require Guarantor} with probability \textbf{0.7802}. class 0 with probability of 0.219692184. In other words, \textbf{Automatically Rejected} with probability \textbf{0.2197}.
+\end{itemize}
+
+Our model (c) flatout rejects the applicant since the credit score and debt ratio in the training data result in a near 100\% correlation for rejection. This can be viewed above int he softmax regression plot where this point would be comfortably in the red region. However, our model (d) has a high chance of requiring a guarantor, although it is not as certain as the first model since it accounts for nonlinear features mapping. This can be observed above in the plots where the datapoint would be in the blue region but also be close to the other two as well, which could lead to some uncertainty. As modelers, we should be aware that making predictions on far away points by extrapolating from the training data could be misleading since there is little data in those regions to truly determine which features should lead to what outcomes.
+
+\item Using a classifier trained on past decisions may miss important external context such as unexpected financial difficulties or future potential cash flow. This would result in people who could truly use a loan and would be able to pay it back being automatically rejected in some cases. Additionally, depending on the training data that we use, we could introduce bias if it existed in the training. This would only perpetuate existing problems. There could be cases where someone has low credit score but now a high income due to education etc. in which they would be able to pay off the loan but because of their previous credit score, are unable to get one (for example, someone who just finished medical school will have to go through residency but in the future has high growth potential). Judging solely on past decisions could help inform decisions but using it as a sole determinant without any human oversight or input could result in unfair outcomes. Other variables such as employment history or previous medical bills could provide a better informed background in that can help in the decision making.
+
+
+
+\end{enumerate}
+
 \end{solution}
 
 \newpage
@@ -362,7 +641,7 @@ After implementing the above classifiers, complete the following exercises:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
 
-\textbf{Name}:
+\textbf{Name}: Charles Zhou
 
 \textbf{Collaborators and Resources}: 
 

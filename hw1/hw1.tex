@@ -198,7 +198,124 @@ dictates how quickly the kernel decays).
 
 \newpage
 \begin{solution}
-	Your solution here.
+	\begin{enumerate}
+	    \item \begin{enumerate}
+	        \item The fit of our predictions corresponds very closely as $k$ decreases. At $k=1$, we see that our predictions follow the nearest neighbour (and is overfit), and as $k$ increases, our predictions become less strict/correspond less with the data (the variance decreases and the data is underfit).
+            \begin{figure}[H]
+	        \centering
+	        \includegraphics[width=0.5\linewidth]{p1.1a.png}
+	    \end{figure}
+    
+                \item The following is a graph of the MSE for each value of $k$.
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=0.5\linewidth]{p1.2.png}
+                \end{figure}
+
+                The solution where $k=1$ has the lowest MSE of around $1.7406$.
+                
+	       \end{enumerate}
+        \item 
+        \begin{enumerate}
+            \item Plot:
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.5\linewidth]{1.2.1.png}
+            \end{figure}
+
+            The fit seems to become "looser" or correspond less closely with the data as $\tau$ increases. At a small $\tau$ (e.g. 1), the kernelized regression has a similar shape as kNN  since distance is weighted heavily. However, as $\tau$ increases, the distance between points is not as strict, so the fit becomes looser with less variance. Therefore, large $\tau$ will weight distant points more than small $\tau$ expressions, so our fit will seemingly transition from overfit-like to underfit as $\tau$ increases. This is evident in the graph above where the $\tau=2500$ line corresponds to the actual datapoints less exact than the line for $\tau=50$. The same relationship exists for $\tau=1$.
+            
+            \item We know that our expression for MSE for the test dataset will be:
+
+            \[
+            \frac{1}{M}\sum_{m=1}^M (y_m' - \hat{y}'_m)^2
+            \]
+
+            where our predicted value for $\hat{y}'_m$ is
+
+            \[
+            \hat{y}'_m = f_\tau(x'_m) = \cfrac{\sum_{n} K_\tau(x_n,x'_m) y_n}{\sum_n K_\tau(x_n, x'_m)}
+            \]
+
+            Thus, we can substitute this into our MSE to find:
+
+            \[
+            \boxed{MSE = \frac{1}{M} \sum_{m=1}^{M} \left(y'_m - \cfrac{\sum_{n} K_\tau(x_n,x'_m) y_n}{\sum_n K_\tau(x_n, x'_m)}\right)^2}
+            \]
+
+            \item The MSE for the values of $\tau$ are as below:
+
+            \begin{table}[h]
+                \centering
+                {\color{blue}
+                \begin{tabular}{|c|c|}
+                    \hline
+                    \textbf{Basis Function Part} & \textbf{MSE} \\
+                    \hline
+                    1 & 1.9473 \\
+                    50 & 1.8583 \\
+                    2500 & 8.3339 \\
+                    \hline
+                \end{tabular}}
+                \label{tab:mse_values}
+            \end{table}
+
+            Out of the three, the model with $\tau = 50$ yields the lowest MSE. Conceptually, this is the case since a very small $\tau$ value would heavily weigh close points while a very high $\tau$ value would weight distance as less important. This corresponds to overfitting and underfitting respectively, so we want to find a "sweet spot" between the two extremes. Thus, conceptually, a $\tau$ value of 50 would likely fit the data better without too many extremes compared to the other values, resulting in a lower MSE.. Choosing a $\tau$ based on the training data would be bad since we would essentially choose a $\tau$ that fits best to that set of data, which would result in overfitting. In other words, if we chose a $\tau$ value based on the training data set, we would just pick the $\tau$ that most closely corresponds to the data.
+
+            \item The time complexity for kernelized regression is $O(N)$ where $N$ is the number of points in the data set. This is because for each prediction, we need to loop through the entire dataset to calculate the weight of a point and value of the point, summing together each point until we get our resulting prediction. In contrast, the time complexity for kNN as it is implemented in the notebook is $O(N\log N)$ since we need to sort the $N$ datapoints based on distance from a point (which optimal sorting takes $O(N\log N)$ time) and then taking the average of the sum of the $k$ points with the smallest distance. (Alternatively, a method such as using quickselect and looping through the list could result in smaller times) \\
+
+            The space complexity for kernelized and kNN are both $O(N)$ since both need to keep track of every data point for each new prediction. This would take $O(N)$ space. This would change in direct proportion to a change in the size of the training set $N$. Similarly, the number of computations to make a prediction would change directly proportional to $N$ as well since the time complexity is in relation to $N$.
+            
+            \item We can find the exact form of $\lim_{\tau \to 0}f_\tau(x^*)$ in the following. Let $x_c$ be the closest $x$ point to $x^*$. We want to show that $K_\tau(x_c,x^*)$ dominates among all other kernels of other data points. Thus, we see for any $x \neq c$
+
+            \[
+            \lim_{\tau \to 0} \frac{K_\tau(x_n, x^*)}{K_\tau (x_c,x^*)} = \exp\left( - \frac{(x_n - x^*)^2 - (x_c-x^*)^2}{\tau} \right)
+            \]
+
+            We know that the expression $(x_n - x^*)^2 - (x_c-x^*)^2$ is always positive since by definition $x_c$ is the closest point so $(x_n - x^*)^2 > (x_c-x^*)^2$. Therefore, since $\tau \to 0$, we see that the expression within the $\exp$ will approach $-\infty$. Therefore
+
+            \[
+            \lim_{\tau \to 0} \frac{K_\tau(x_n, x^*)}{K_\tau (x_c,x^*)} = 0
+            \]
+
+            Thus we see that the term $K_\tau(x_c,x^*)$ dominates the other kernel points. Additionally, we can rewrite the limit as:
+
+            \[
+            \lim_{\tau \to 0}\sum_{n} \frac{K_\tau (x_n,x^*)}{\sum_{n}K_\tau (x_n,x^*)}y_n
+            \]
+
+            Since $\sum_{n}K_\tau (x_n,x^*) > K_\tau (x_c,x^*)$ as the sum includes the $x_c$ point, we know that the fraction:
+
+            \[
+            \frac{K_\tau (x_n,x^*)}{\sum_{n}K_\tau (x_n,x^*)} < \frac{K_\tau(x_n, x^*)}{K_\tau (x_c,x^*)}
+            \]
+
+            Therefore, for any $n \neq c$, the values
+
+            \[
+            \lim_{\tau\to 0}\frac{K_\tau(x_n,x^*)}{\sum_{n}K_\tau (x_n,x^*)} = 0
+            \]
+
+            However, since we know that the fraction
+
+            \[
+            \sum_{n} \frac{K_\tau (x_n,x^*)}{\sum_{n}K_\tau (x_n,x^*)} = 1
+            \]
+
+            this implies that
+
+            \[
+            K_\tau (x_c,x^*) = 1
+            \]
+
+            Therefore, we see that the only non-zero point of the sum in the limit will be the result. In other words,
+
+            \[
+            \lim_{\tau \to 0}\sum_{n} \frac{K_\tau (x_n,x^*)}{\sum_{n}K_\tau (x_n,x^*)}y_n = y_c
+            \]
+            
+        \end{enumerate}
+	\end{enumerate}
 \end{solution}
 
 
@@ -245,13 +362,84 @@ expectation taken over the joint distribution $p(x,y)$. This essentially just me
 
 \newpage
 \begin{solution}
-	Your solution here.
+	\begin{enumerate}
+	    \item We want to find an expression for the optimal $w$. This can be done by minimizing the expected squared loss $\mathcal{L}(\bm w) = E_{x,y}[ ( y - \hat{y} )^2]$. We can begin by substituting the value of $\hat{y}=wx$ into the expression and simplifying.
+
+        \begin{align*}
+            \mathcal{L}(\bm w) &= E_{x,y}[ ( y - \hat{y} )^2] \\
+            &=E_{x,y}[ ( y - wx )^2]\\
+            &= E_{x,y}[(y^2 - 2wxy + w^2x^2)]\\
+            &= E_y[y^2] - E_{x,y}[2wxy] + E_x[w^2x^2] \\
+            &= E_y[y^2] - 2wE_{x,y}[xy] + w^2E_x[x^2]
+        \end{align*}
+
+        We can take the derivative of this expression with respect to $w$ to find the optimal $w$.
+
+        \[
+        \frac{d\mathcal{L}(w)}{dw} = - 2E_{x,y}[xy] + 2wE_x[x^2]
+        \]
+
+        By setting the derivative to zero, we can solve for the minimum point of the loss function. This simplifies to
+
+        \[
+        2E_{x,y}[xy] = 2wE_x[x^2]
+        \]
+
+        Rearranging, we find the optimal $w^*$:
+
+        \[
+        \boxed{w^* = \frac{E_{x,y}[xy]}{E_x[x^2]}}
+        \]
+
+        \item We can empirically estimate the expected values as averages as the following by the definition of what an average is:
+
+        \[
+        \boxed{E_{x,y}[xy] \approx \frac{\sum_{n=1}^N y_n x_n}{N}}
+        \]
+
+        \[
+        \boxed{E_x[x^2] \approx \frac{\sum_{n=1}^N x_n^2}{N}}
+        \]
+
+        Similarly, this empirical method can be applied to any moment terms using the dataset.
+
+        
+        \item We can substitute the empirical moments from part 2 into our expression for $w^*$ to get the following:
+
+        \[
+        w^* = \frac{\sum_{n=1}^N y_n x_n}{\sum_{n=1}^N x_n^2}
+        \]
+
+        From HW0, we have the expression
+
+        \[\bm{\hat w} = (\bm X^\top \bm X)^{-1}\bm X^\top \bm y\]
+
+        We can write the quantity
+        
+        \[
+        \bm X^\top \bm X = \sum_{n=1}^N x_n^2
+        \]
+        
+        since we have 2-D data of the form $(x,y)$ which results in our data having $\bm X$ being formatted as a $N\times1$ vector. Similarly, we can write
+
+        \[
+        \bm X^\top \bm y = \sum_{n=1}^N x_ny_n
+        \]
+
+        Thus we can see the expression for the optimal $\bm{\hat{w}}$ from HW0 is the same as our empirical optimal $w*$:
+
+        \[
+        \bm{\hat w} = \frac{\sum_{n=1}^N y_n x_n}{\sum_{n=1}^N x_n^2} = w^*
+        \]
+
+        \item None of the above derivations would rely on the assumption that $x$ and $y$ are jointly Guassian since we do not use properties of a joint Guassian. In our above derivations, we use linearity and moments which do not rely on any prior assumptions regarding a joint nature of $x$ and $y$.        
+	\end{enumerate}
 \end{solution}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Problem 3
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage
+
 \begin{problem}[Basis Regression, 30pts]
 
  Having reviewed the theory, we now implement some linear regression models for the temperature. If we just directly use the data as given to us, we would only have
@@ -327,7 +515,39 @@ expectation taken over the joint distribution $p(x,y)$. This essentially just me
 
 \newpage 
 \begin{solution}
-	Your solution here.
+	\begin{enumerate}
+	    \item Below:
+        \begin{figure}[H]
+	    \centering
+	    \includegraphics[width=0.8\linewidth]{p3.1.png}
+	\end{figure}
+
+        \item The MSE for each of the basis regressions on the test set are bellow:
+            \begin{table}[h]
+                \centering
+                {\color{blue}
+                \begin{tabular}{|c|c|}
+                    \hline
+                    \textbf{Basis Function Part} & \textbf{MSE} \\
+                    \hline
+                    a & 7.9557 \\
+                    b & 8.7082 \\
+                    c & 5.9670 \\
+                    d & 58.8855 \\
+                    \hline
+                \end{tabular}}
+                \label{tab:mse_values}
+            \end{table}
+
+            It seems like $(d)$ overfits on the data as the prediction is very spiky and corresponds very closely to the actual datapoints while having a high MSE value for the test data. In contrast, $(b)$ seems to underfit the data as it has low variance and is not influenced significantly by the datapoints in its predictions with a moderate MSE value on the test data. The basis of $(a)$ could be underfit as we see that $(c)$ has a smaller MSE value, but the extent to which it is underfit is much less than $(b)$. In general, it seems like the bases with higher MSE values tend to overfit/underfit more, depending on the variance within the graphs.
+            
+        \item The transform $f$ helps address numerical instabilities by scaling the values of $x$ before being input into the basis function. They are helpful in preventing too large or small numbers which could result in imprecise calculations (e.g. large exponential results).
+
+        \item The time complexity of linear regression is $O(D)$ since after training, we only need to multiply an input by the weights and add up each number (from each dimension index) to find our prediction. The space complexity is also $O(D)$ since all we need to store is the weight vector, which has $D$ elements. Thus, in contrast to kernelized and kNN where we needed to use the datapoints to predict a new point, linear regression is faster at predicting datapoints, although training a model is slow. The computation for prediction new inputs and what is stored do not depend on the size of the training set $N$. Since in most cases $D$ will be less than $N$ and would stay constant, we see that linear regression has better complexities compared to kNN and kernelized regressors.
+
+        \item In general, each of the three different regressors have different use cases, though it seems like typically kernelized regression is better than kNN depending on $\tau$ as it has a smaller time complexity while also being less prone to overfitting/having smoother predictions. Linear regression with bases is typically more efficient in terms of time and space complexity for new predictions since after training, we can just find the dot product of the weights and an input to get a prediction. However, we need to use bases for non-linear data in linear regression while in kNN and kernelized regression we do not need to. While kNN is different from kernelized regression, it does nto seem to be clearly worse as depending on $\tau$ we can get vastly different results. There is also no one best regression as each has a different use case. Overall, with the fact that we have multiple regression functions, we can try each one on a dataset and see which perform the best (splitting data into training, validation, and test while using the methods discussed in lecture such as cross validation). This will allow us to determine the best model to use in a given situation.
+    
+    \end{enumerate}
 \end{solution}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -372,7 +592,7 @@ Note that minimizing $\mathcal{L}_{lasso}(\boldw)$ is exactly what LASSO regress
         \item Repeat step (b) until convergence or the maximum number of iterations is reached.
     \end{enumerate} 
 
-    Implement the \texttt{find\_lasso\_weights} function according to the above algorithm, letting $\boldw_0$ be a vector of ones and the max number of iterations be 5000. Then, fit models with $\lambda=1, 10$ to basis (d) from Problem 3, plot the predictions, and compute the MSE's. You will need to do some preprocessing, but a completed helper function for this is already provided. How do the graphs and errors compare to those for the unregularized basis (d) model? 
+    Implement the \texttt{find\_lasso\_weights} function according to the above algorithm, letting the max number of iterations be 5000. Then, fit models with $\lambda=1, 10$ to basis (d) from Problem 3, plot the predictions, and compute the MSE's. You will need to do some preprocessing, but a completed helper function for this is already provided. How do the graphs and errors compare to those for the unregularized basis (d) model? 
 
 
 \end{enumerate}
@@ -381,7 +601,175 @@ Note that minimizing $\mathcal{L}_{lasso}(\boldw)$ is exactly what LASSO regress
 
 \newpage
 \begin{solution}
-	Your solution here.
+	\begin{enumerate}
+	    \item We want to show that maximizing the posterior likelihood is equivalent to the expression in 1. Additionally, since we are maximizing with respect to $\bm w$, it suffices to maximize just the numerator. Thus, we aim to maximize
+
+        \[
+        p(\bm y|\bm w, \bm X)p(\bm w)
+        \]
+
+        Since $\log$ is a monotonically increasing function, maximizing the $\log$ of the expression is the same as maximizing it when finding optimal $w$.
+
+        \[
+        \log  p(\bm y|\bm w, \bm X) + \log p(\bm w)
+        \]
+
+        Let us begin with the expression $p(\bm y|\bm w, \bm X)$. We know that 
+
+        \[y_n = \boldw^\top\boldx_n + \epsilon_n, \quad \epsilon_n \sim \mathcal{N}(0, \sigma^2)\]
+
+        so we can write $y_n | \bm w, \bm x_n \sim \mathcal{N}(\bm w^\top \bm x_n, \sigma^2)$. Thus we can write the probability $p(\bm y | \bm w, \bm X)$ as:
+        \begin{align*}
+            p(\bm y | \bm w, \bm X) &= \prod_{n=1}^{N} p(y_n|\bm w,\bm x_n) \\
+            &= \prod_{n=1}^{N} \frac{1}{\sqrt{2\pi \sigma^2}}\exp\{\frac{-(y_n - \bm w^\top \bm x_n)^2}{2\sigma^2}\}
+        \end{align*}
+
+        Therefore the $\log$ version would be
+        \begin{align*}
+            \log  p(\bm y|\bm w, \bm X) &= \sum_{n=1}^N \left[\log \frac{1}{\sqrt{2\pi \sigma^2}}-\frac{(y_n - \bm w^\top \bm x_n)^2}{2\sigma^2}\right]\\
+            &= \sum_{n=1}^N -\frac{1}{2}\log(2\pi\sigma^2)-\frac{1}{2\sigma^2}\sum_{n=1}^N(y_n-\bm w^\top \bm x_n)^2 \\
+            &= -\frac{N}{2}\log(2\pi\sigma^2)-\frac{1}{2\sigma^2}||\bm y-\bm X \bm w||^2_2
+        \end{align*}
+
+        We can take a similar process to expand $p(\bm w)$ where $D$ is the number of dimensions of the vector $\bm w$.
+
+        \[
+        p(\bm w) = \frac{1}{(2\pi)^{D/2}\left|\frac{\sigma^2}{\lambda}\bm I\right|^{\frac{1}{2}}}\exp\{-\frac{1}{2}\bm w^\top \left(\frac{\sigma^2}{\lambda}\bm I\right)^{-1}\bm w\}
+        \]
+
+        Since the covariance matrix is just a diagonal with each diagonal element being $\frac{\sigma^2}{\lambda}$, the determinant can be found as
+        \[
+        \left|\frac{\sigma^2}{\lambda}\bm I\right| = \left(\frac{\sigma^2}{\lambda}\right)^D
+        \]
+
+        Additionally the inverse of the covariance matrix is $\frac{\lambda}{\sigma^2}\bm I$, so we can simplify the previous expression to
+
+        \[
+        p(\bm w) = \frac{1}{(2\pi)^{D/2}\left(\frac{\sigma^2}{\lambda}\right)^{D/2}}\exp\{-\frac{\lambda}{2\sigma^2}||\bm w||^2_2\}
+        \]
+
+        Taking the log, we get
+        \[
+        \log p(\bm w) = -\frac{N}{2}\log(2\pi)-\frac{N}{2}\log\left(\frac{\sigma^2}{\lambda}\right)-\frac{\lambda}{2\sigma^2}||\bm w||^2_2
+        \]
+
+        Therefore, substituting this into the previous expression we see that our posterior likelihood can be maximized when the following is maximized:
+
+        \[
+        -\frac{N}{2}\log(2\pi\sigma^2)-\frac{1}{2\sigma^2}||\bm y-\bm X \bm w||^2_2 -\frac{N}{2}\log(2\pi)-\frac{N}{2}\log\left(\frac{\sigma^2}{\lambda}\right)-\frac{\lambda}{2\sigma^2}||\bm w||^2_2
+        \]
+
+        Since only terms containing $\bm w$ will influence the result, we can remove the other elements from the expression. Additionall, the $\sigma^2$ are essentially constants in this expression and can be divided later once the expression is set to zero so it does not influence the maximum. We get:
+
+        \[
+        -\frac{1}{2}||\bm y-\bm X \bm w||^2_2 -\frac{\lambda}{2}||\bm w||^2_2
+        \]
+
+        Alternatively, we can multiply the expression by a negative sign and find the minimum of the following:
+
+        \[
+        \frac{1}{2}||\bm y-\bm X \bm w||^2_2 +\frac{\lambda}{2}||\bm w||^2_2
+        \]
+
+        Therefore, we can see that maximizing the posterior likelihood is equivalent to minimizing $\mathcal{L}_{ridge}(\boldw)$.
+
+        \item Let us solve for $w^*$ which minimizes $\mathcal{L}_{ridge}(\boldw)$. We can rewrite the loss expression:
+        \begin{align*}
+            \mathcal{L}_{ridge}(\boldw) &= \frac{1}{2} || \bm y - \bm X \bm w ||^2_2 + \frac{\lambda}{2} || \bm w ||^2_2 \\
+            &= \frac{1}{2}(\bm y - \bm X \bm w)^\top (\bm y - \bm X \bm w) + \frac{\lambda}{2} \bm w^\top \bm w \\
+            &= \frac{1}{2}(\bm y^\top - (\bm X\bm w)^\top)(\bm y-\bm X\bm w) + \frac{\lambda}{2} \bm w^\top \bm w \\
+            &= \frac{1}{2}(\bm y^\top \bm y - (\bm X\bm w)^\top -\bm y^\top (\bm X\bm w) + (\bm X\bm w)^\top (\bm X\bm w)) + \frac{\lambda}{2}\bm w^\top \bm w \\
+            &= \frac{1}{2} \bm y^\top \bm y - (\bm y^\top X)\bm w + \frac{1}{2} \bm w^\top (\bm X^\top \bm X)\bm w + \frac{\lambda}{2}\bm w^\top \bm w 
+        \end{align*}
+        Thus we can take the gradient:
+        \begin{align*}
+            \nabla_w \mathcal{L}_{ridge}(\boldw) &= -(\bm y^\top \bm X)^\top + \bm X^\top \bm X\bm w + \lambda \bm w
+        \end{align*}
+        We can set this equal to zero and solve for $\bm w$:
+        \begin{align*}
+            (\bm X^\top \bm X + \lambda\bm I)\bm w &= \bm X^\top \bm y \\
+            \bm w^* &= (\bm X^\top \bm X + \lambda\bm I)^{-1}\bm X^\top \bm y
+        \end{align*}
+
+        \item We can take a similar approach as above. We wish to maximize the posterior probability $p(\bm w | \bm X, \bm y)$ which is, from the note, the same as maximizing $p(\bm y|\bm w, \bm X)p(\bm w)$. Since $\log$ is a monotonically increasing function, maximizing the log of the above expression would achieve the same results as maximizing the expression. Thus, want to maximize:
+
+        \[
+        \log p(\bm y|\bm w, \bm X) + \log p(\bm w)
+        \]
+
+        Let us begin with the expression $p(\bm y|\bm w, \bm X)$. We know that 
+
+        \[y_n = \boldw^\top\boldx_n + \epsilon_n, \quad \epsilon_n \sim \mathcal{N}(0, \sigma^2)\]
+
+        so we can write $y_n | \bm w, \bm x_n \sim \mathcal{N}(\bm w^\top \bm x_n, \sigma^2)$. We recognize that this is the same as what we did in (1), so we know that
+
+        \[
+        \log  p(\bm y|\bm w, \bm X) 
+            = -\frac{N}{2}\log(2\pi\sigma^2)-\frac{1}{2\sigma^2}||\bm y-\bm X \bm w||^2_2
+        \]
+
+        We can take a similar approach for $p(\bm w)$ where $D$ represents the number of dimensions in the vector $\bm w$.
+
+        \begin{align*}
+            p(\bm w) &= \prod_{d=1}^{D} p(w_d) \\
+            &= \prod_{d=1}^{D} \frac{1}{2\left(\frac{\lambda}{2\sigma^2}\right)}\exp\left\{-\frac{|w_d|}{\left(\frac{2\sigma^2}{\lambda}\right)}\right\} \\
+            &= \prod_{d=1}^{D} \frac{\sigma^2}{\lambda}\exp\left\{-\frac{\lambda}{2\sigma^2}|w_d|\right\}
+        \end{align*}
+
+        Taking the log, we get
+
+        \begin{align*}
+            \log p(\bm w) &= \sum_{d=1}^{D} \log \frac{\sigma^2}{\lambda}+ \sum_{d=1}^{D}-\frac{\lambda}{2\sigma^2}|w_d| \\
+            &= D\log \frac{\sigma^2}{\lambda} - \frac{\lambda}{2\sigma^2} \sum_{d=1}^D |w_d|\\
+            &= D\log \frac{\sigma^2}{\lambda} - \frac{\lambda}{2\sigma^2}||w||_1
+        \end{align*}
+
+        Combining the two terms and removing constants, we see that maximizing the posterior probability is the same as maximizing:
+
+        \[
+        -\frac{1}{2\sigma^2}||\bm y-\bm X \bm w||^2_2- \frac{\lambda}{2\sigma^2}||w||_1
+        \]
+
+        The $\frac{1}{\sigma^2}$ is just a constant scaling factor which does not affect optimization, so we can factor it out of the expression. We can see that optimizing the above expression is the same as minimizing its negative version:
+
+        \[
+        \frac{1}{2}||\bm y-\bm X \bm w||^2_2+ \frac{\lambda}{2}||w||_1
+        \]
+
+        In other words, we can see that maximizing the posterior likelihood is equivalent to minimizing $\mathcal{L}_{lasso}(\boldw)$.
+        
+        \item There is no general closed form for the LASSO estimator since we can see that our objective function has the term
+
+        \[
+        ||\bm w||_1 = \sum_{d=1}^D |w_d|
+        \]
+
+        and that the derivative of $|w_d|$ when $w_d=0$ is undefined. Thus, our loss function $\mathcal{L}_{lasso}(\boldw)$ is non-differentiable, which means that we cannot solve for the optimal $w*$ by setting the derivative equal to 0.
+
+        \item Graph:
+
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.75\linewidth]{image.png}
+        \end{figure}
+
+        \begin{table}[h]
+                \centering
+                {\color{blue}
+                \begin{tabular}{|c|c|}
+                    \hline
+                    \textbf{$\lambda$ value} & \textbf{MSE} \\
+                    \hline
+                    1 & 30.0606 \\
+                    10 & 15.6184 \\
+                    \hline
+                \end{tabular}}
+                \label{tab:mse_values}
+            \end{table}
+
+        For both $\lambda$ values $1$ and $10$ we see lower mean squared error values of around $30.0606$ and $15.6184$ respectively, compared to the MSE of 58.8855 in basis $(d)$ We can see that the graph in basis $(d)$ is very spiky with lots of variance, and the graphs from LASSO seem to be less so, especially as $\lambda$ increases for $\lambda=10$.
+        
+	\end{enumerate}
 \end{solution}
 
 
@@ -389,10 +777,12 @@ Note that minimizing $\mathcal{L}_{lasso}(\boldw)$ is exactly what LASSO regress
 % Name and Calibration
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newpage
-\subsection*{Name}
+\subsection*{Name: Charles Zhou}
 
 \subsection*{Collaborators and Resources}
 Whom did you work with, and did you use any resources beyond cs181-textbook and your notes?
+
+I used the Matrix Cookbook and Math for ML book to reference for math such as MVN Guassian and other vector calculus properties.
 
 
 \end{document}

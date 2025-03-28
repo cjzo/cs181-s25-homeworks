@@ -81,7 +81,134 @@ In this class, we will be exploring the question of ``how do we model the trend 
 
 
 \begin{solution}
-	Your solution here.
+	\begin{enumerate}
+	    \item We can being by creating two systems of linear equations since the two points lie on the same line:
+
+        \[
+        y_1 = w_0 + w_1 x_1
+        \]
+        \[
+        y_2 = w_0 + w_1 x_2
+        \]
+
+        We can use substitution:
+
+        \[
+        w_0 = y_1 - w_1 x_1
+        \]
+
+        and substitute this into the second expression:
+
+        \[
+        y_2 = y_1 - w_1 x_1 + w_1 x_2
+        \]
+        \[
+        y_2 = y_1 - w_1(x_1 - x_2)
+        \]
+        \[
+        w_1 = \frac{y_1 - y_2}{x_1 - x_2}
+        \]
+
+        We can find $w_0$ as well by the following
+
+        \begin{align*}
+            w_0 = y_1 - \frac{y_1 - y_2}{x_1 - x_2} x_1 = \frac{x_1y_2 - x_2y_1 }{x_1 - x_2}
+        \end{align*}
+
+        \item We can write this in the form of a matrix equation where we ultimately have two vectors
+
+        \begin{align*}
+            \begin{bmatrix}
+                y_1 \\
+                y_2
+            \end{bmatrix}
+            &=
+            \begin{bmatrix}
+                w_0 + w_1 x_1 \\
+                w_0 + w_1 x_2
+            \end{bmatrix}
+        \end{align*}
+
+        The right side can be observed to be the result of a multiplication of a 2x2 matrix and a 2x1 vector, resulting in a 2x1 vector. Thus, we get:
+
+        \begin{align*}
+            \mathbf{y} = 
+            \begin{bmatrix}
+                y_1 \\
+                y_2
+            \end{bmatrix}
+            , \quad
+            \mathbf{X} = 
+            \begin{bmatrix}
+                1 & x_1 \\
+                1 & x_2
+            \end{bmatrix}
+            , \quad
+            \mathbf{w} = 
+            \begin{bmatrix}
+                w_0 \\
+                w_1
+            \end{bmatrix}
+        \end{align*}
+
+        We can verify that this is correct since
+
+        \[
+        \mathbf{Xw} =
+            \begin{bmatrix}
+                w_0 + w_1 x_1 \\
+                w_0 + w_1 x_2
+            \end{bmatrix}
+        \]
+
+        \item The matrix $\bm X$ must be full-rank and invertible for there to be one unique solution for $\bm w$. This means that the data points cannot lie on a vertical line (since then the columns of $\bm X$ would be linearly dependent). In other words, $x_1 \neq x_2$. Under this condition, we can write the solution for $\bm w$ as
+
+        \[
+        \bm w = \bm X^{-1}\bm y
+        \]
+
+        \item We can find the inverse of $\bm X$ as it is a $2 \times 2$ matrix:
+
+        \[
+        \bm X^{-1} = \frac{1}{x_2 - x_1}
+        \begin{bmatrix}
+            x_2 & -x_1 \\
+            -1 & 1
+        \end{bmatrix}
+        \]
+
+        Thus, we can calculate
+
+        \begin{align*}
+            \bm w &= \frac{1}{x_2 - x_1}
+        \begin{bmatrix}
+            x_2 & -x_1 \\
+            -1 & 1
+        \end{bmatrix}
+        \begin{bmatrix}
+            y_1 \\
+            y_2
+        \end{bmatrix} \\
+        &= \frac{1}{x_2 - x_1}
+        \begin{bmatrix}
+            x_2y_1 - x_1y_2 \\
+            y_2 - y_1
+        \end{bmatrix}
+        \end{align*}
+
+        Therefore, we see that
+
+        \[
+        w_1 = \frac{y_2 - y_1}{x_2 - x_1} = \frac{y_1 - y_2}{x_1 - x_2}
+        \]
+
+        \[
+        w_0 = \frac{x_2y_1 - x_1y_2}{x_2-x_1} = \frac{x_1y_2 - x_2y_1}{x_1 - x_2}
+        \]
+
+        We can see that the final answers for $\bm w$ match. One advantage for phrasing the problem of fitting the model into matrix notation can be that it could make it easier to scale the problem to higher dimensions. Instead of creating large systems of linear equations and solving them one by one, we can use the matrix notation to write the problem in a simple/clean manner and solve it in the same way.
+        \item Our expression from (3) would not work when the data set consists of more than two points since for $\bm X$ to be invertible, it must be a square matrix. Having more than two points would result in $\bm X^{-1}$ not existing.
+	\end{enumerate}
 \end{solution}
 
 \color{black}
@@ -116,7 +243,41 @@ $$y = f(x_1, x_2) = \exp\left(-(x_1 - 2)^2 - (x_2 - 1)^2 \right)$$
 
 
 \begin{solution}
-	Your solution here.
+	\begin{enumerate}
+	    \item 
+            \begin{figure}[H]
+                \centering
+                \includegraphics[width=0.25\linewidth]{image.png}
+            \end{figure}
+            From the plot of the height function, we can see that there exists a unique maximum plant height (at the top of the parabola) since every other point has a smaller value than it. Since the function is a downward facing parabola, we know from the form of the function that the vertex point will have the greatest height for all possible inputs $x$.
+            
+                        \item Since the equation $y = -3x^2 + 72x + 70$ is a negative-facing parabola, the height $y$ will be maximized when $y'=0$. Thus,
+            
+\[             y' = -6x + 72             \]
+            
+            Setting $y'$ to 0, we can solve for the amount of ounces of water per week:
+
+            \[
+            0 = -6x + 72
+            \]
+            \[
+            x = 12
+            \]
+
+            The height would be
+
+            \[
+            y = -3(12)^2 + 72(12) + 70 = 502
+            \]
+
+            Nari should give her plants 12 ounces of water per week to maximize its height. With this much water, her plant will grow 502 mm tall.
+        \item 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.25\linewidth]{image2.png}
+\end{figure}
+        The values of $x_1$ and $x_2$ that maximize plant height are $(x_1, x_2) = (2, 1)$. From the form of the plotted function, these yield a global maximum. There is a peak in the function located at $(2, 1)$ and all other height values are smaller.
+\end{enumerate}
 \end{solution}
 
 \newpage 
@@ -162,7 +323,47 @@ In this class, one of our main focuses is to model the unexpected variations in 
 \newpage
 
 \begin{solution}
-	Your solution here.
+	\begin{enumerate}
+	    \item \begin{enumerate}
+	        \item A Guassian distribution might not be appropriate since size and weight cannot be negative values (a Guassian distribution can result in negative values).
+                \item Empirically, the most likely combination seems to be around a size of 120 and weight of 4 from the plot. These align with the expected theoretical size and weight of the package from the distribution.
+                \begin{figure}[H]
+                    \centering
+                    \includegraphics[width=0.35\linewidth]{histplot.png}
+                \end{figure}
+	    \end{enumerate}
+        \item 
+        \begin{figure}[H]
+	    \centering
+	    \includegraphics[width=0.35\linewidth]{fixed_s.png}
+	\end{figure}
+        Comparing these two PDF plots, it seems that there is a slight positive correlation between S and W. As values for S are set at a lower fixed number, we see the PDF curve of W shift left and vice versa.
+        \item By linearity, we see that
+        \begin{align*}
+            E(T) &= E(60 + 0.6W + 0.2S + \epsilon) \\
+            &= 60 + 0.6E(W) + 0.2E(S) + E(\epsilon) \\
+            &= 60 + 2.4 + 24 + 0 \\
+            &= 86.4
+        \end{align*}
+        We can find variance:
+        \begin{align*}
+            \mathrm{Var}(T) &= \mathrm{Var}( 60 + 0.6W + 0.2S + \epsilon) \\
+            &= \mathrm{Var}(0.6W + 0.2S) + \mathrm{Var}(\epsilon) \\
+            &= \mathrm{Var}(0.6W) + \mathrm{Var}(0.2S) + 2\mathrm{Cov}(0.6W, 0.2S) + 5 \\
+            &= 0.36(1.5) + 0.04(1.5) + 2(0.12) + 5 \\
+            &= 5.84
+        \end{align*}
+        \item Since we know that $W \sim \mathcal{N}(4, 1.5)$, we know that the probability for any arbitrarily selected package being fragile is 0.5 since the mean weight is 4. Let Y be the number of packages that weight less than 4 pounds. Conditional on $N = n$, we see that
+        \[
+        Y | N = n \sim \mathrm{Bin}(n, 0.5)
+        \]
+        In other words, conditional on the number of packages that arrive, the number of fragile packages follows a binomial distribution with the PMF
+
+        \[
+        P(Y = k | N = n) = \binom{n}{k}(0.5)^k(0.5)^{n-k}
+        \]
+        \item Both parts in code file. An empirical mean and standard deviation is mean of 6249.468, std of 731.672.
+		\end{enumerate}
 \end{solution} 
 
 \newpage 
@@ -198,7 +399,28 @@ In this class, we will bridge theory and practice through implementing the metho
 \end{problem}
 
 \begin{solution}
-	Your solution here.
+	
+    \begin{enumerate}
+        \item 
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.25\linewidth]{5a.png}
+        \end{figure}
+        Steve was extracting rows into x and y instead of columns. The plotted data looks roughly linear.
+        \item The arrays were being horizontally appended to each other with hstack. To fix this, each element in the intercept and $\bm x$ array when used as a paramter for np.hstack needs to be reshaped to be its own vector so that the inputs become 2D vectors. This will result in y.shape being $(100, )$ and X.shape being $(100, 2)$ or $100 \times 2$. There is no second coordinate in the output for y.shape since $\bm y$ only has one dimension.
+        \item The dimensions of $X$ is $100\times 2$, so $(\bm X^\top \bm X)^{-1}$ will result in a $2\times 2$ matrix (since $\bm X^\top$ is $2 \times 100$) The result of $(\bm X^\top \bm X)^{-1}\bm X^\top$ will be a $2\times 100$ matrix. We can mathematically treat $\bm y$ as a $100 \times 1$ column vector, so our result shape of $\bm{\hat w}$ in the demo will be $2 \times 1$.
+    \item 
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.25\linewidth]{5d.png}
+    \end{figure}
+    The issues include that $** -1$ does not properly invert a matrix, also we need $@$ instead of $*$ for matrix multiplication. Also, we do not transpose y and instead transpose X. Instead of returning, we modify self.w to the proper weight. (Actual locations in the code)
+    \item We can vectorize MSE so that we square the each element of the difference vector between $\bm y$ and $\hat{\bm y}$, then find the mean. We can write this mathematically as
+
+    \[
+    \mathrm{MSE} = \frac{1}{n}(\bm y - \hat{\bm y})^\top (\bm y - \hat{\bm y})
+    \]
+        \end{enumerate}
 \end{solution}
 
 \end{document}
